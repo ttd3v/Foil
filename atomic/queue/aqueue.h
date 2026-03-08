@@ -1,6 +1,6 @@
 #ifndef AQUEUE_H
 #define AQUEUE_H
-#include "../../../typos.h"
+#include "../../typos.h"
 typedef struct {
         u64 tail;
         u64 head;

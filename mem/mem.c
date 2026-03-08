@@ -1,22 +1,9 @@
-#include "../../typos.h"
-#include "../../flags.h"
+#include "../typos.h"
 #ifndef MEM_H
 void* map(u64 size);
 void unmap (ref pointer, u64 size);
 void cpy(void *dest, const void *src, u64 count);
-#define MEM_H 1
-#if ARCH != 1
-        #include<stdlib.h>
-        void* map(u64 size){
-                return malloc(size);
-        }
-        void unmap(ref pointer, u64 size){
-                return free(pointer);
-        }
-        void cpy(void *dest, const void *src, u64 count){
-                memcpy(dest,src,count);
-        }
-#else
+
 inline void* map(u64 size) {
     void* addr;
     register long r10 __asm__("r10") = 0x22;
@@ -65,5 +52,4 @@ inline void movq(u64 * restrict dest, const u64 src){
                 : "memory"
         );
 }
-#endif
 #endif

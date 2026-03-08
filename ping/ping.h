@@ -1,5 +1,5 @@
 
-#include "../../typos.h"
+#include "../typos.h"
 #ifndef PING_H
 #define PING_H
 #define ACTIVE 1

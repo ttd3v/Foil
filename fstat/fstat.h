@@ -1,6 +1,6 @@
 #ifndef FSTAT_H
 #define FSTAT_H
-#include "../../typos.h"
+#include "../typos.h"
 struct stat {
 	unsigned long	st_dev;		/* Device.  */
 	unsigned long	st_ino;		/* File serial number.  */

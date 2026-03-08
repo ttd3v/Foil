@@ -1,6 +1,6 @@
 #ifndef PARSERS_H
 #define PARSERS_H
-#include "../../typos.h"
+#include "../typos.h"
 /// parse_number
 /// It parses a signed integer, it does not care about over/underflows.
 ///

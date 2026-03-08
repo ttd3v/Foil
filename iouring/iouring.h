@@ -1,6 +1,6 @@
 #ifndef IOURING_H
 #define IOURING_H
-#include "../../typos.h"
+#include "../typos.h"
 
 typedef struct {
         u32 head;

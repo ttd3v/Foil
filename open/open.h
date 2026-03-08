@@ -62,7 +62,7 @@
 
 #ifndef OPEN_H
 #define OPEN_H
-#include "../../typos.h"
+#include "../typos.h"
 ///open() opens the file specified by pathname . If the file doesn't exist and O_CREAT is
 ///specified, it is created with the permission bits derived from mode & ~umask . The returned file
 ///descriptor is the lowest-numbered unused fd in the process.

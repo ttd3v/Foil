@@ -1,6 +1,6 @@
 #ifndef LINESET_H
 #define LINESET_H
-#include "../../typos.h"
+#include "../typos.h"
 enum LineSetValueType:u64 {
         String = 0,
         Bool = 1,
