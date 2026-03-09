@@ -1,4 +1,4 @@
-#include "../typos.h"
+#include "../../typos.h"
 #ifndef MEM_H
 void* map(u64 size);
 void unmap (ref pointer, u64 size);

@@ -1,6 +1,6 @@
 #ifndef MEM_H
 #define MEM_H
-#include "../typos.h"
+#include "../../typos.h"
 static const ref MAP_FAIL = (void*)-1;
 
 #define PROT_READ 0x1

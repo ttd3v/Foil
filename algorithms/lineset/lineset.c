@@ -1,6 +1,6 @@
 #include "lineset.h"
-#include "../mem/mem.h"
-#include "../constants/errno.h"
+#include "../../syscall/mem/mem.h"
+#include "../../constants/errno.h"
 #include "../parsers/parsers.h"
 
 int lineset_parse(str string, u64 length, LineSet* output){

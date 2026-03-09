@@ -1,6 +1,6 @@
 #ifndef STRINGIFY_H
 #define STRINGIFY_H
-#include "../typos.h"
+#include "../../typos.h"
 
 /// Turns an i64 into a string. Its assumed that there are 32 bytes in the output
 i32 stringify_i64(i64 input, str output);

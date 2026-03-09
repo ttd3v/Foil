@@ -1,5 +1,5 @@
 #include "array.h"
-#include "../mem/mem.h"
+#include "../../syscall/mem/mem.h"
 
 i32 array_new(array *self, u64 pages){
         u64 p = pages|1;

@@ -1,6 +1,6 @@
 #ifndef ARRAY_H
 #define ARRAY_H
-#include "../typos.h"
+#include "../../typos.h"
 typedef struct{
         ref buffer;
         u64 length;
