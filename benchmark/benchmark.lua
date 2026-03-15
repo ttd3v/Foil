@@ -38,6 +38,24 @@ local benchmarks = {
             "data-structures/btree/asm/x86-64/remove.s",
         },
     },
+    {
+        name = "aqueue",
+        entry = "benchmark/aqueue.c",
+        c = {
+            "atomic/queue/aqueue.c",
+            "debug/print/print.c",
+            "syscall/random/random.c",
+            "syscall/mem/mem.c",
+            "syscall/sched/sched_setscheduler/sched_setscheduler.c",
+            "syscall/sched/sched_setaffinity/sched_setaffinity.c",
+            "syscall/getcpu/getcpu.c",
+            "syscall/clock/clock.c",
+            "algorithms/stringify/stringify.c",
+        },
+        asm = {
+            "atomic/queue/aqueue_x8664.s",
+        },
+    }
     -- add more benchmarks here:
     -- {
     --     name  = "array",
