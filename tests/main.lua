@@ -35,7 +35,7 @@ local BUILD = "build"
 local CC    = "gcc"
 local AS    = "fasm"
 
-function run(cmd)
+local function run(cmd)
         print("  " .. cmd)
         local ok = os.execute(cmd)
         if not ok then
@@ -44,13 +44,13 @@ function run(cmd)
         end
 end
 
-function mkdir(dir)
+local function mkdir(dir)
         os.execute("mkdir -p " .. dir)
 end
 
 -- compile a .c file -> .o
 -- inc: include flag string, e.g. "-I." or "-I.. -I."
-function cc(src, inc)
+local function cc(src, inc)
         inc = inc or "-I."
         local obj = BUILD .. "/" .. src:gsub("/", "_"):gsub("%.c$", ".o")
         run(CC .. " -c -ffreestanding -nostdinc " .. inc .. " -O3 -o " .. obj .. " " .. src)
@@ -58,7 +58,7 @@ function cc(src, inc)
 end
 
 -- assemble a fasm .s file -> .o
-function asm(src)
+local function asm(src)
         local obj = BUILD .. "/" .. src:gsub("/", "_"):gsub("%.s$", ".o")
         run(AS .. " " .. src .. " " .. obj)
         return obj
@@ -90,6 +90,7 @@ local c_sources = {
         "algorithms/parsers/unumber.c",
         "algorithms/stringify/stringify.c",
         "syscall/random/random.c",
+        "hashes/blake2d/blake2d.c",
         -- atomic
         "atomic/queue/aqueue.c",
         -- data-structures

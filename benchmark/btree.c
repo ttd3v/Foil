@@ -1,7 +1,6 @@
 #include "../data-structures/btree/btree.h"
 #include "../debug/print/print.h"
 #include "../syscall/random/random.h"
-#include "../syscall/mem/mem.h"
 #include "../syscall/sched/sched_setscheduler/sched_setscheduler.h"
 #include "../syscall/sched/sched_setaffinity/sched_setaffinity.h"
 #include "../syscall/sched/sched_policy.h"
@@ -9,8 +8,9 @@
 #include "../syscall/clock/clock.h"
 #include "../algorithms/stringify/stringify.h"
 
-#define TARGET 64000000 
-
+#ifndef TARGET
+#define TARGET 8000000 
+#endif
 
 #define COL_OP   20
 #define COL_US   12
@@ -59,9 +59,10 @@ i32 main(){
         print(sep, sizeof(sep) - 1);
     }
 
-    u64* kv = map(TARGET * 8);
-    randall(kv, TARGET * 8);
-    u64* keys = kv;
+    u64 seed;
+    u64 seed1;
+    random(&seed, 8);
+    random(&seed1, 8);
 
     i32 priority = 99;
     sched_setscheduler(0, SCHED_FIFO, &priority);
@@ -78,7 +79,7 @@ i32 main(){
 
     // push
     clock_gettime(CLOCK_MONOTONIC, &start);
-    for(i32 i = 0; i < TARGET; i++) btreeU64_push(root, keys[i], i);
+    for(i32 i = 0; i < TARGET; i++) btreeU64_push(root, ((i*seed)^seed1), i);
     clock_gettime(CLOCK_MONOTONIC, &end);
     {
         u64 d = (end.tv_nsec - start.tv_nsec) / 1000;
@@ -89,7 +90,7 @@ i32 main(){
     // get
     clock_gettime(CLOCK_MONOTONIC, &start);
     u64 __value;
-    for(i32 i = 0; i < TARGET; i++) btreeU64_get(root, keys[i], &__value);
+    for(i32 i = 0; i < TARGET; i++) btreeU64_get(root, ((i*seed)^seed1), &__value);
     clock_gettime(CLOCK_MONOTONIC, &end);
     {
         u64 d = (end.tv_nsec - start.tv_nsec) / 1000;
@@ -99,7 +100,7 @@ i32 main(){
 
     // remove
     clock_gettime(CLOCK_MONOTONIC, &start);
-    for(i32 i = 0; i < TARGET; i++) btreeU64_remove(root, keys[i]);
+    for(i32 i = 0; i < TARGET; i++) btreeU64_remove(root, ((i*seed)^seed1));
     clock_gettime(CLOCK_MONOTONIC, &end);
     {
         u64 d = (end.tv_nsec - start.tv_nsec) / 1000;

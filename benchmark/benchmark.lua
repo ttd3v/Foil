@@ -56,6 +56,7 @@ local benchmarks = {
             "atomic/queue/aqueue_x8664.s",
         },
     }
+    
     -- add more benchmarks here:
     -- {
     --     name  = "array",

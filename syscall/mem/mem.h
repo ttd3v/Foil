@@ -21,7 +21,7 @@ static const ref MAP_FAIL = (void*)-1;
 #define MAP_SYNC 0x080000
 #define MAP_FIXED_NOREPLACE 0x100000
 #define MAP_UNINITIALIZED 0x4000000
-
+#define MAP_PRIVATE	0x02	
 ref map(u64 size);
 ref mmap(u64 addr_hint,u64 size, u64 prot, u64 flags, u64 fd, u64 offset);
 void unmap(ref pointer, u64 size);

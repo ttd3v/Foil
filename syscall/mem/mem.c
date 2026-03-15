@@ -1,12 +1,12 @@
+#include "mem.h"
 #include "../../typos.h"
-#ifndef MEM_H
 void* map(u64 size);
 void unmap (ref pointer, u64 size);
 void cpy(void *dest, const void *src, u64 count);
 
 inline void* map(u64 size) {
     void* addr;
-    register long r10 __asm__("r10") = 0x22;
+    register long r10 __asm__("r10") = (MAP_ANONYMOUS | MAP_POPULATE | MAP_PRIVATE);
     register long r8  __asm__("r8")  = -1;
     register long r9  __asm__("r9")  =  0;
     __asm__ __volatile__ (
@@ -45,11 +45,5 @@ inline void cpy(void * restrict dest, const void * restrict src, u64 count){
         );
 }
 inline void movq(u64 * restrict dest, const u64 src){
-        __asm__ volatile (
-                "mov %%0, qword (%%1)\n"
-                :
-                : "r" (src), "r" (dest)
-                : "memory"
-        );
+    *dest = src;
 }
-#endif
