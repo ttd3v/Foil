@@ -9,7 +9,7 @@
 #include "../syscall/clock/clock.h"
 #include "../algorithms/stringify/stringify.h"
 
-#define TARGET 1000000
+#define TARGET 1000000 
 
 i32 main(){
         {
@@ -36,16 +36,16 @@ i32 main(){
         u64 d_micro = (end.tv_nsec - start.tv_nsec)/1000;
 
         {
-                char label0[] = "btreeu64_push\t";
+                char label0[] = "\nbtreeu64_push\t";
                 print(label0,sizeof(label0));
                 char num[32]={0};
                 i32 l = stringify_u64(d_micro, num);
                 num[l] = '\t';
-                print(num,l);
-                u64 throughput = TARGET / d_micro;
+                print(num,l+1);
+                u64 throughput = (TARGET * 1000000ULL) / d_micro;
                 l = stringify_u64(throughput, num);
                 num[l] = '\n';
-                print(num,l);
+                print(num,l+1);
         }
 
         {
@@ -61,11 +61,11 @@ i32 main(){
                 char num[32]={0};
                 i32 l = stringify_u64(d_micro, num);
                 num[l] = '\t';
-                print(num,l);
-                u64 throughput = TARGET / d_micro;
+                print(num,l+1);
+                u64 throughput = (TARGET * 1000000ULL) / d_micro;
                 l = stringify_u64(throughput, num);
                 num[l] = '\n';
-                print(num,l);
+                print(num,l+1);
         }
 
         }
@@ -84,11 +84,11 @@ i32 main(){
                 char num[32]={0};
                 i32 l = stringify_u64(d_micro, num);
                 num[l] = '\t';
-                print(num,l);
-                u64 throughput = TARGET / d_micro;
+                print(num,l+1);
+                u64 throughput = (TARGET * 1000000ULL) / d_micro;
                 l = stringify_u64(throughput, num);
                 num[l] = '\n';
-                print(num,l);
+                print(num,l+1);
         }
 
         }
