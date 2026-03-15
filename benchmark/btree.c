@@ -9,7 +9,7 @@
 #include "../syscall/clock/clock.h"
 #include "../algorithms/stringify/stringify.h"
 
-#define TARGET 10000
+#define TARGET 64000000 
 
 #define COL_OP   20
 #define COL_US   12
