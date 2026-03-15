@@ -1,9 +1,11 @@
 #include "../debug/print/print.h"
-#include "../debug///ping///ping.h"
+#include "../debug/ping/ping.h"
 #include "../data-structures/array/array.h"
 #include "../data-structures/btree/btree.h"
 #include "../atomic/queue/aqueue.h"
-#define TVALUE 4096 
+#include "../syscall/mem/mem.h"
+#include "../syscall/random/random.h"
+#define TVALUE 100000
 i32 main(){
 /////////////////////////////////////////////////////////////////////////////////////////
 {
@@ -55,6 +57,8 @@ i32 main(){
 }
 /////////////////////////////////////////////////////////////////////////////////////////
 {
+        u64* keys = map(TVALUE*8);
+        randall(keys, TVALUE*8);
         btreeU64 *tree = (struct btreeU64*)-1;
         i32 o = btreeU64_new(&tree);
         if (o != 0){
@@ -64,12 +68,12 @@ i32 main(){
         }
         //ping(0);
         for (u64 key = 0; key < TVALUE; key++) {
-                btreeU64_push(tree, key, key);
+                btreeU64_push(tree, keys[key], key);
         }
         //ping(1);
          for (u64 key = 0; key < 252; key++) {
                 u64 val = -1;
-                i32 a= btreeU64_get(tree, key, &val);
+                i32 a= btreeU64_get(tree, keys[key], &val);
                 if(val != key){
                         char out[] = "\nx!=y; btree_get\n";
                         print(out,sizeof(out));
@@ -87,7 +91,7 @@ i32 main(){
         //ping(2);
         for (u64 key = 0; key < TVALUE; key++) {
                 u64 val = -1;
-                i32 a= btreeU64_get(tree, key, &val);
+                i32 a= btreeU64_get(tree, keys[key], &val);
                 if(val != key){
                         char out[] = "\nx!=y; btree_get\n";
                         print(out,sizeof(out));
@@ -102,14 +106,12 @@ i32 main(){
                         return -1;
                 }
         }
-        //ping(3);
-        btreeU64_push(tree, 1, 2);
-        //ping(4);
-        btreeU64_remove(tree, 1);
-        //ping(5);
-        u64 v = 0;
-        btreeU64_get(tree, 1, &v);
-        if(v != 2){
+        for (u64 key = 0; key < TVALUE; key++) {
+                btreeU64_remove(tree, keys[key]);
+        }
+        u64 v = -1;
+        i32 e = btreeU64_get(tree, keys[0], &v);
+        if(v != -1){
                 char out[] = "x!=y; btree_remove\n";
                 print(out,sizeof(out));
                 return -1;

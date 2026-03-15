@@ -89,6 +89,7 @@ local c_sources = {
         "algorithms/parsers/number.c",
         "algorithms/parsers/unumber.c",
         "algorithms/stringify/stringify.c",
+        "syscall/random/random.c",
         -- atomic
         "atomic/queue/aqueue.c",
         -- data-structures

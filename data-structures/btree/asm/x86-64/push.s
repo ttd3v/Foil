@@ -3,7 +3,7 @@ extrn map
 public btreeU64_push
 section '.text' executable
 
-define seed 0x9e3779b97f4a7c15
+define seed 0x9e3779b97f4a7c15 
 define capacity 252
 
 macro m_pop{
@@ -45,6 +45,7 @@ lea r9, qword [rdi+4072]
 lea r10, qword [rdi+4080]
 mov r8, seed
 imul r8, rsi
+imul r8, rdi
 and r8, 2
 cmp r8,0
 cmovne r9, r10

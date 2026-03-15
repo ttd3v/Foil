@@ -52,6 +52,7 @@ ret
 .dive:
 mov r10, seed
 imul r10, rsi
+imul r10, rdi
 and r10, 2
 mov r9, [rdi+4072]
 cmp r10, 0
