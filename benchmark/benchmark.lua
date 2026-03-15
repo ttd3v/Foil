@@ -6,7 +6,7 @@ local ROOT  = "."
 local TMP   = "/tmp/foil_bench"
 local CC    = "gcc"
 local FASM  = "fasm"
-local CFLAGS = "-O2 -mavx2 -march=native -Wall"
+local CFLAGS = "-O3 -mavx2 -march=native -w"
 
 ------------------------------------------------------------------------
 -- benchmark definitions
@@ -50,13 +50,13 @@ local benchmarks = {
 ------------------------------------------------------------------------
 -- helpers
 ------------------------------------------------------------------------
-local function run(cmd)
-    io.write("  $ " .. cmd .. "\n")
-    local handle = io.popen(cmd .. " 2>&1", "r")
+local function run(cmd,must_print)
+    --io.write("  $ " .. cmd .. "\n")
+    local handle = io.popen(cmd .. "", "r")
     local output = handle:read("*a")
     local ok, reason, code = handle:close()
     if output and #output > 0 then
-        io.write(output)
+        if must_print then print(output) end
     end
     if not ok then
         io.write("[!] command failed (exit " .. tostring(code) .. "): " .. cmd .. "\n")
@@ -72,7 +72,7 @@ end
 
 local function compile_c(src)
     local obj = obj_path(src)
-    run(string.format("%s %s -c %s/%s -o %s", CC, CFLAGS, ROOT, src, obj))
+    run(string.format("%s %s -c %s/%s -o %s", CC, CFLAGS, ROOT, src, obj),false)
     return obj
 end
 
@@ -80,13 +80,13 @@ local function compile_asm(src)
     local obj = obj_path(src)
     -- fasm outputs a flat object; wrap into ELF64 .o via objcopy
     local tmp_bin = obj .. ".bin"
-    run(string.format("%s %s/%s %s", FASM, ROOT, src, obj))
+    run(string.format("%s %s/%s %s", FASM, ROOT, src, obj),false)
     return obj
 end
 
 local function link(objs, out)
     local obj_list = table.concat(objs, " ")
-    run(string.format("%s %s -o %s -lc", CC, obj_list, out))
+    run(string.format("%s %s -o %s -lc", CC, obj_list, out),false)
 end
 
 ------------------------------------------------------------------------
@@ -95,7 +95,7 @@ end
 run("mkdir -p " .. TMP)
 
 for _, bench in ipairs(benchmarks) do
-    io.write("\n[bench] " .. bench.name .. "\n")
+    --io.write("\n[bench] " .. bench.name .. "\n")
 
     local objs = {}
 
@@ -117,8 +117,6 @@ for _, bench in ipairs(benchmarks) do
     link(objs, bin)
 
     -- run with sudo for SCHED_FIFO elevation
-    io.write("\n[run]  " .. bench.name .. "\n")
-    run("sudo " .. bin)
+    --io.write("\n[run]  " .. bench.name .. "\n")
+    run("sudo " .. bin,true)
 end
-
-io.write("\n[done]\n")
