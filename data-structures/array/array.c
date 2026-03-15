@@ -37,7 +37,7 @@ i32 array_push(array *self, ref *element, u64 element_size, u64 N){
 }
 
 i32 array_remove(array *self, ref *element, u64 element_size, u64 position){
-        u64 index = (position%self->length)*element_size;
+        u64 index = position*element_size;
         cpy(element, self->buffer+index, element_size);
         cpy(self->buffer+index, self->buffer+((self->length-1)*element_size),element_size);
         self->length--;

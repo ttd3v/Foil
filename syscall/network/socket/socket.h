@@ -1,6 +1,6 @@
 #ifndef SOCKET_H
 #define SOCKET_H
-#include "../../typos.h"
+#include "../../../typos.h"
 
 /// Initialize a new socket
 /// socket() creates an endpoint for communication and returns a file descriptor. The socket is

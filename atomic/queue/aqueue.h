@@ -8,15 +8,17 @@ typedef struct {
         u64 buffer_size;
         u64 capacity;
 } aqueue;
-/// Makes a new atomic queue into a pointer
-/// u64 cell_size -> size of each element
-/// u64 buffer_size -> memory pages to be allocated (4096*N);
-/// the capacity of the queue is buffer_size/cell_size
+/// Makes a new atomic queue into a pointer\n
+/// u64 buffer_size -> memory pages to be allocated (4096*N);\n
+/// the capacity of the queue is buffer_size/cell_size\n
+/// \n
+/// A rule is that the buffer_size must ALWAYS be a power of two.
 ///
 /// Output:
 ///     0 -> Success
 ///     -1 -> Failed to allocate memory
 ///     -2 -> invalid buffer_size
+///     -3 -> buffer size must be a power of two
 i32 aqueue_make(aqueue* output, u64 buffer_size);
 
 /// Pushes a new element into an atomic queue
