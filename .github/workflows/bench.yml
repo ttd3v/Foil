@@ -1,0 +1,35 @@
+name: bench
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:  # allows manual trigger from the Actions tab
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gcc fasm lua5.4
+
+      - name: run benchmarks
+        run: |
+          sudo lua benchmark/benchmark.lua | tee /tmp/bench_output.txt
+
+      - name: post results to job summary
+        run: |
+          echo '## benchmark results' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/bench_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: upload results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: /tmp/bench_output.txt
