@@ -8,7 +8,7 @@
 #include "../algorithms/stringify/stringify.h"
 
 #ifndef TARGET
-#define TARGET 8000000 
+#define TARGET 64000000 
 #endif
 
 #define COL_OP   20
