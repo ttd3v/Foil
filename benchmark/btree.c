@@ -1,6 +1,5 @@
 #include "../data-structures/btree/btree.h"
 #include "../debug/print/print.h"
-#include "../syscall/random/random.h"
 #include "../syscall/sched/sched_setscheduler/sched_setscheduler.h"
 #include "../syscall/sched/sched_setaffinity/sched_setaffinity.h"
 #include "../syscall/sched/sched_policy.h"
@@ -59,10 +58,9 @@ i32 main(){
         print(sep, sizeof(sep) - 1);
     }
 
-    u64 seed;
-    u64 seed1;
-    random(&seed, 8);
-    random(&seed1, 8);
+    u64 seed = 0xAA55AA55UL;
+    u64 seed1 = 0xBBCCBBCCUL;
+    
 
     i32 priority = 99;
     sched_setscheduler(0, SCHED_FIFO, &priority);
