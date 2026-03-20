@@ -94,7 +94,7 @@ static inline void F(HT *h, u64 m[16], u64 t, u64 f){
 #define ceil(x,y) ((x+y-1)/y)
 
 typedef u64 b[16];
-i32 blake2d(u8* out, u64 out_len, u8 *key, u32 key_length, u8* in, u64 in_length){
+i32 blake2d(u8* out, u64 out_len, u8* in, u64 in_length){
         HT h = {
                 0x6A09E667F3BCC908, 
                 0xBB67AE8584CAA73B,
@@ -105,7 +105,7 @@ i32 blake2d(u8* out, u64 out_len, u8 *key, u32 key_length, u8* in, u64 in_length
                 0x1F83D9ABFB41BD6B,
                 0x5BE0CD19137E2179
         };
-        h[0] ^= 0x01010000 ^ (key_length << 8) ^ out_len;
+        h[0] ^= 0x01010000 ^ (0 << 8) ^ out_len;
         u64 dd = ceil(in_length, 128);
         if(dd > 1){
                 for(u64 i = 0; i < dd-1; i++){

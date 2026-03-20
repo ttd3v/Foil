@@ -4,8 +4,9 @@ i32 listen(i32 fd, i32 backlog){
         __asm__ volatile (
         "syscall\n"
         : "=a"(output)
-        : "a" (50), "D" (backlog)
+        : "a" (50), "D" (fd), "S" (backlog)
         : "rcx", "r11", "memory"
         );
         return output;
 }
+

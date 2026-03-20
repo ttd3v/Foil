@@ -8,7 +8,7 @@ i32 array_new(array *self, u64 pages){
         self->pages = p;
         self->length = 0;
         self->buffer = m;
-        return m < 0?-1:0;
+        return (i64)m < 0?-1:0;
 }
 
 void array_destroy(array *self){
