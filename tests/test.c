@@ -164,7 +164,7 @@ i32 main(){
                 0xB9, 0x23, 0x86, 0xED, 0xD4, 0x00, 0x99, 0x23
         };
         u8 in[3] = "abc";
-        blake2d(out, sizeof(out), (u8*)-1, 0, in, 3);
+        blake2d(out, sizeof(out), in, 3);
         for (u64 i = 0; i < 64; i++){
                 if(out[i] != expected[i]){
                         char num1[32];

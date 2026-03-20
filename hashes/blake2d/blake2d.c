@@ -117,11 +117,7 @@ i32 blake2d(u8* out, u64 out_len, u8* in, u64 in_length){
         u64 offset = 128*(dd-1);
         u64 remaining = in_length - offset;
         cpy(last, in + offset, remaining);
-        if(key_length == 0){
-                F(&h, last, in_length, 1);
-        }else{
-                F(&h, last, in_length+128, 1);
-        }
+        F(&h, last, in_length, 1);
 
         cpy(out,h,out_len>64?64:out_len);
         return 0;
