@@ -24,16 +24,19 @@ macro hash targ, tmp {
     xor  targ, tmp
 }
 
-; out=in%fac
-macro mod in,fac,out{
-push rdx
-push rax
-xor rdx,rdx
-mov rax,in
-div fac
-mov rdx,out
-pop rax
-pop rdx
+; out = in % fac
+macro mod in, fac, out {
+    push rdx
+    push rax
+    push rcx 
+    xor  rdx, rdx
+    mov  rax, in
+    mov  rcx, fac
+    div  rcx
+    mov  out, rdx
+    pop  rcx
+    pop  rax
+    pop  rdx
 }
 
 ; rdi -> self

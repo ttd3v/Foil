@@ -17,16 +17,19 @@ macro hash targ, tmp {
     xor  targ, tmp
 }
 
-; out=in%fac
-macro mod in,fac,out{
-push rdx
-push rax
-xor rdx,rdx
-mov rax,in
-div fac
-mov rdx,out
-pop rax
-pop rdx
+; out = in % fac
+macro mod in, fac, out {
+    push rdx
+    push rax
+    push rcx          ; scratch for divisor
+    xor  rdx, rdx
+    mov  rax, in
+    mov  rcx, fac     ; can't div by immediate
+    div  rcx
+    mov  out, rdx     ; remainder → out
+    pop  rcx
+    pop  rax
+    pop  rdx
 }
 
 macro remove_clobbered{
