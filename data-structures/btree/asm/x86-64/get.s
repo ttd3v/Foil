@@ -2,68 +2,115 @@ format ELF64
 public btreeU64_get
 section '.text' executable
 
-define seed 0x9e3779b97f4a7c15
 
-macro m_pop{
+
+macro hash targ, tmp {
+    mov  tmp, 0x733CA476C5148639
+    imul targ, tmp
+    mov  tmp, targ
+    shr  tmp, 30
+    xor  targ, tmp
+    mov  tmp, 0xA4939A417BFB78A3
+    imul targ, tmp
+    mov  tmp, targ
+    shr  tmp, 27
+    xor  targ, tmp
+}
+
+; out=in%fac
+macro mod in,fac,out{
+push rdx
+push rax
+xor rdx,rdx
+mov rax,in
+div fac
+mov rdx,out
+pop rax
+pop rdx
+}
+
+macro remove_clobbered{
 pop rcx
+pop r12
+pop r11d
 pop r10
 pop r9
 pop r8
 }
 
-btreeU64_get:
+; rdi self
+; rsi key
+; rax -> index
+btreeU64_query:
 push r8
 push r9
 push r10
+push r11d
+push r12
 push rcx
-xor rax,rax
-mov r8, qword [rdi]
-mov r9, qword [rdi+8]
+.iterate:
+mov r8,  qword [rdi]
+mov r9,  qword [rdi+8]
 mov r10, qword [rdi+16]
-cmp r8, 0
-;-------------
-je .dive
-cmp rsi, r9
+
+test r10, r10
+jz .dive
+
+cmp rsi, r8
 jb .dive
-cmp rsi, r10
+cmp rsi, r9
 ja .dive
-;-------------
+
 xor rcx,rcx
-imul r8,r8,8
-vmovq xmm0, rsi
-vpbroadcastq ymm1, xmm0
-.pivot:
-vmovdqu ymm0, [rdi+24+rcx]
+
+vpbroadcastq xmm0, rsi
+vpbroadcastq ymm0, xmm0
+lea r12, [rdi+896]
+.loop:
+vmovdqu ymm1, [r12+rcx*8]
 vpcmpeqq ymm2, ymm1, ymm0
-vpmovmskb r10d, ymm2
-cmp r10d, 0
-jne .found
-add rcx, 32
-cmp rcx, r8
-jb .pivot
-jmp .dive
+vpmovmskb r11d, ymm2
+test r11d, r11d
+jnz .found
+add rcx, 4
+cmp rcx,r10
+jae .dive
 .found:
-bsf r10d, r10d
-add rcx, r10
-mov r10, qword [rdi+rcx+2040]
-mov qword [rdx], r10
-m_pop
+bsf r8, r11d
+add rcx, r8
+mov rax, rcx
+remove_clobbered
 ret
+
 .dive:
-mov r10, seed
-imul r10, rsi
-imul r10, rdi
-and r10, 2
-mov r9, [rdi+4072]
-cmp r10, 0
-mov r10, [rdi+4080]
-cmove r10, r9 
-cmp r10, -1
-je .not_found
-mov rdi, r10
-m_pop
-jmp btreeU64_get
+mov r8, rsi
+xor r9,r9
+  hash r8, r9
+  mod r8, 109, r8
+lea r8, [rsi+24+r8*8]
+mov r9, qword [r8]
+cmp r9, 0
+cmovne rdi,r9
+jne .iterate
+mov rax, -1
+ret
+
+
+; rdi self
+; rsi key
+; rdx *value
+btreeU64_get:
+push rdi
+call btreeU64_query
+cmp rax,-1
+je not_found
+lea rax, qword [rdi+rax*8]
+mov r10, qword [rax+2496]
+mov qword [rdx], r10
+xor rax,rax
+pop rdi
+ret
 .not_found:
-m_pop
-mov rax, -2
+pop rdi
+mov rax,-1
 ret

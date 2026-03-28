@@ -1,32 +1,45 @@
 format ELF64
 public btreeU64_new
-extrn map
 section '.text' executable
 
+; returns pointer
+; rsi -> ref*
 btreeU64_new:
-xor rax,rax
-push r8
-push r9
-push r10
-push r11
-push r12
-push rdi
-push rcx
-mov rdi, 4096
-call map
-pop rcx
-pop rdi
-xor r8,r8
-mov qword [rdi], rax
-mov qword [rax+8], -1
-mov qword [rax+4072], -1
-mov qword [rax+4080], -1
-mov qword [rax+4088], -1
+;stack
+sub rsp,  64
+mov qword [rsp+56], r11 ; I hope the OoO likes it  
+mov qword [rsp+48], rcx ; I hope the OoO likes it 
+mov qword [rsp+40], r9  ; I hope the OoO likes it  
+mov qword [rsp+32], r8  ; I hope the OoO likes it 
+mov qword [rsp+24], r10 ; I hope the OoO likes it  
+mov qword [rsp+16], rdx ; I hope the OoO likes it 
+mov qword [rsp+8], rdi 
+mov qword [rsp], rsi
+; handling syscall
+xor rdi, rdi
+mov rsi, 4096
+mov rdx, 
+mov r8, -1
+xor r9,r9
+mov r10, 0x8022 ; MAP_ANON | MAP_POP | MAP_PRIV
+mov rax, 9
+; mmap
+syscall
 cmp rax,0
-cmovg rax,r8
-pop r12
-pop r11
-pop r10
-pop r9
-pop r8
+
+mov rsi, qword [rsp]    ; I hope the OoO likes it 
+mov rdi, qword [rsp+8]  ; I hope the OoO likes it 
+mov rdx, qword [rsp+16] ; I hope the OoO likes it
+mov r10, qword [rsp+24] ; I hope the OoO likes it 
+mov r8,  qword [rsp+32] ; I hope the OoO likes it 
+mov r9,  qword [rsp+40] ; I hope the OoO likes it
+mov rcx, qword [rsp+48] ; I hope the OoO likes it 
+mov r11, qword [rsp+56] ; I hope the OoO likes it 
+add rsp, 64
+
+jl .error
+mov qword [rsi], rax
+mov qword [rax], -1; min=u64::MAX
+xor rax,rax
+.error:
 ret
