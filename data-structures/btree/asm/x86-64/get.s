@@ -35,7 +35,7 @@ macro mod in, fac, out {
 macro remove_clobbered{
 pop rcx
 pop r12
-pop r11d
+pop r11
 pop r10
 pop r9
 pop r8
@@ -48,7 +48,7 @@ btreeU64_query:
 push r8
 push r9
 push r10
-push r11d
+push r11
 push r12
 push rcx
 .iterate:
