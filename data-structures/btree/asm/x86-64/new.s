@@ -18,7 +18,7 @@ mov qword [rsp], rsi
 ; handling syscall
 xor rdi, rdi
 mov rsi, 4096
-mov rdx, 
+mov rdx, 0x03
 mov r8, -1
 xor r9,r9
 mov r10, 0x8022 ; MAP_ANON | MAP_POP | MAP_PRIV
