@@ -2,13 +2,14 @@
 #define BTREE_H
 #include "../../typos.h"
 /// BTree that manages u64 pairs (kv)
+#define CELLS 9
 typedef struct  {
         u64 min;
         u64 max;
         u64 length;
-        ref branch[109];
-        u64 keys[200];
-        u64 values[200];
+        ref branch[(4096-24-CELLS*16)/8];
+        u64 keys[CELLS];
+        u64 values[CELLS];
 } btreeU64;
 
 _Static_assert(sizeof(btreeU64)==4096,"4096");

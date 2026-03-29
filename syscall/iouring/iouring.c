@@ -7,6 +7,7 @@ i32 iou_make(uring *output, u32 entries, u32 iou_flags){
                 "syscall\n"
                 : "=a" (fd)
                 : "a" (425), "D" (entries), "S" (output)
+                : "rcx", "r11", "memory"
         );
         if (fd < 0) return -1;
         output->sq_ring = mmap(0,output->sq_off.array + output->sq_entries * sizeof(u32), PROT_READ|PROT_WRITE, MAP_SHARED|MAP_POPULATE, fd, 0);
@@ -14,7 +15,7 @@ i32 iou_make(uring *output, u32 entries, u32 iou_flags){
         output->cq_ring = mmap(0,output->cq_off.cqes + output->cq_entries * sizeof(iou_cqe),PROT_READ|PROT_WRITE, MAP_SHARED|MAP_POPULATE, fd, 0x8000000ULL);
         output->fd = fd;
         output->sq_mask = *(u32*)((u8*)output->sq_ring + output->sq_off.ring_mask);
-
+        output->cq_mask = *(u32*)((u8*)output->cq_ring + output->cq_off.ring_mask);
         return 0;
 }
 i32 iou_paint(uring *ring, u32 opcode, u64 fd, u64 addr, u64 len, u64 offset, u64 userdata, u32 op_flags){
@@ -39,6 +40,7 @@ i32 iou_enter(uring *ring, u32 to_submit, u32 min_complete, u64 flags, u64 arg, 
                 "syscall\n"
                 : "=a" (output)
                 : "a" (426), "D" (ring->fd), "S" (to_submit), "d" (min_complete), "r" (r10_val), "r" (r8_val), "r" (r9_val)
+                : "rcx", "r11", "memory"
         );
         return output;
 }
@@ -55,3 +57,5 @@ i32 iou_spill(uring *ring, iou_cqe *out, u32 max) {
     *(u32*)((u8*)ring->cq_ring + ring->cq_off.head) = ring->cq_head;
     return count;
 }
+
+

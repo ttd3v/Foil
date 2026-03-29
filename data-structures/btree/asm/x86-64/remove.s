@@ -2,6 +2,7 @@ format ELF64
 extrn btreeU64_query
 public btreeU64_remove
 section '.text' executable
+include 'const.inc'
 
 ;rdi self
 ;rsi key
@@ -17,17 +18,14 @@ push r10
 mov r8,  qword [rdi]
 mov r9,  qword [rdi+8]
 mov r10, qword [rdi+16]
-
-lea r8, [rdi+896+r10*8]
-lea r9, [rdi+2496+r10*8]
+dec r10
+lea r8, [rdi+KEYS_OFF+r10*8]
+lea r9, [rdi+VALUES_OFF+r10*8]
 mov r8, [r8]
 mov r9, [r9]
-
-mov [rdi+896+rax*8], r8
-mov [rdi+2496+rax*8], r9
-dec r10
+mov [rdi+KEYS_OFF+rax*8], r8
+mov [rdi+VALUES_OFF+rax*8], r9
 mov [rdi+16], r10
-
 cmp r10,0
 je .all_zero
 cmp rsi, r8
@@ -40,16 +38,16 @@ jmp .pass
 push rcx
 mov r8, -1
 xor r9,r9
-xor rcx
+xor rcx,rcx
 
 .min_mut_step:
-mov r9, qword [rdi+896+rcx*8]
+mov r9, qword [rdi+KEYS_OFF+rcx*8]
 cmp r9,r8
 cmovb r8,r9
 inc rcx
 cmp rcx,r10
 jb .min_mut_step
-mov qword [rdi],r9
+mov qword [rdi],r8
 pop rcx
 jmp .pass
 
@@ -58,16 +56,16 @@ jmp .pass
 push rcx
 mov r8, 0
 xor r9,r9
-xor rcx
+xor rcx,rcx
 
 .max_mut_step:
-mov r9, qword [rdi+896+rcx*8]
+mov r9, qword [rdi+KEYS_OFF+rcx*8]
 cmp r9,r8
 cmova r8,r9
 inc rcx
 cmp rcx,r10
 jb .max_mut_step
-mov qword [rdi+8],r9
+mov qword [rdi+8],r8
 pop rcx
 jmp .pass
 

@@ -57,7 +57,7 @@ i32 main(){
 {
         u64* keys = map(TVALUE*8);
         randall(keys, TVALUE*8);
-        btreeU64 *tree = (struct btreeU64*)-1;
+        btreeU64 *tree = (btreeU64*)-1;
         i32 o = btreeU64_new(&tree);
         if (o != 0){
                 char out[] = "failed to initialize btree\n";

@@ -23,13 +23,14 @@ local benchmarks = {
         c = {
             "data-structures/btree/btree.c",
             "debug/print/print.c",
+            "debug/ping/ping.c",
             "syscall/random/random.c",
             "syscall/mem/mem.c",
             "syscall/sched/sched_setscheduler/sched_setscheduler.c",
             "syscall/sched/sched_setaffinity/sched_setaffinity.c",
             "syscall/getcpu/getcpu.c",
             "syscall/clock/clock.c",
-            "algorithms/stringify/stringify.c",
+            "algorithms/stringify/stringify.c"
         },
         asm = {
             "data-structures/btree/asm/x86-64/get.s",
@@ -38,6 +39,7 @@ local benchmarks = {
             "data-structures/btree/asm/x86-64/remove.s",
         },
     },
+        --[[
     {
         name = "aqueue",
         entry = "benchmark/aqueue.c",
@@ -55,8 +57,7 @@ local benchmarks = {
         asm = {
             "atomic/queue/aqueue_x8664.s",
         },
-    }
-    
+    }]]
     -- add more benchmarks here:
     -- {
     --     name  = "array",
@@ -136,6 +137,6 @@ for _, bench in ipairs(benchmarks) do
     link(objs, bin)
 
     -- run with sudo for SCHED_FIFO elevation
-    --io.write("\n[run]  " .. bench.name .. "\n")
+    io.write("\n[run]  " .. bench.name .. "\n")
     run("sudo " .. bin,true)
 end

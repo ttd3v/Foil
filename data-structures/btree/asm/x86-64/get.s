@@ -1,22 +1,13 @@
 format ELF64
 public btreeU64_get
+public btreeU64_query
 section '.text' executable
-
-
-
+include 'const.inc'
 macro hash targ, tmp {
-    mov  tmp, 0x733CA476C5148639
+    mov  tmp, 0x9E3779B97F4A7C15
     imul targ, tmp
-    mov  tmp, targ
-    shr  tmp, 30
-    xor  targ, tmp
-    mov  tmp, 0xA4939A417BFB78A3
-    imul targ, tmp
-    mov  tmp, targ
-    shr  tmp, 27
-    xor  targ, tmp
+    shr  targ, 12
 }
-
 ; out = in % fac
 macro mod in, fac, out {
     push rdx
@@ -51,6 +42,7 @@ push r10
 push r11
 push r12
 push rcx
+mov rax,-1
 .iterate:
 mov r8,  qword [rdi]
 mov r9,  qword [rdi+8]
@@ -63,12 +55,13 @@ cmp rsi, r8
 jb .dive
 cmp rsi, r9
 ja .dive
-
+xor r11,r11
 xor rcx,rcx
+prefetcht0 [rdi+KEYS_OFF]
 
-vpbroadcastq xmm0, rsi
+vmovq xmm0, rsi
 vpbroadcastq ymm0, xmm0
-lea r12, [rdi+896]
+lea r12, [rdi+KEYS_OFF]
 .loop:
 vmovdqu ymm1, [r12+rcx*8]
 vpcmpeqq ymm2, ymm1, ymm0
@@ -78,9 +71,12 @@ jnz .found
 add rcx, 4
 cmp rcx,r10
 jae .dive
+jmp .loop
 .found:
-bsf r8, r11d
-add rcx, r8
+xor r8,r8
+bsf r8d, r11d
+shr r8d, 3
+add rcx, r8 
 mov rax, rcx
 remove_clobbered
 ret
@@ -89,13 +85,14 @@ ret
 mov r8, rsi
 xor r9,r9
   hash r8, r9
-  mod r8, 109, r8
-lea r8, [rsi+24+r8*8]
+  mod r8, BRANCHES, r8
+lea r8, [rdi+24+r8*8]
 mov r9, qword [r8]
 cmp r9, 0
 cmovne rdi,r9
 jne .iterate
 mov rax, -1
+remove_clobbered
 ret
 
 
@@ -103,17 +100,12 @@ ret
 ; rsi key
 ; rdx *value
 btreeU64_get:
-push rdi
 call btreeU64_query
 cmp rax,-1
-je not_found
-lea rax, qword [rdi+rax*8]
-mov r10, qword [rax+2496]
-mov qword [rdx], r10
+je .not_found
+mov rax, qword [rdi+VALUES_OFF+rax*8]
+mov qword [rdx], rax
 xor rax,rax
-pop rdi
 ret
 .not_found:
-pop rdi
-mov rax,-1
 ret
