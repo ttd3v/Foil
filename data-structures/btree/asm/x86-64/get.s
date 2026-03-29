@@ -9,18 +9,8 @@ macro hash targ, tmp {
     shr  targ, 12
 }
 ; out = in % fac
-macro mod in, fac, out {
-    push rdx
-    push rax
-    push rcx          ; scratch for divisor
-    xor  rdx, rdx
-    mov  rax, in
-    mov  rcx, fac     ; can't div by immediate
-    div  rcx
-    mov  out, rdx     ; remainder → out
-    pop  rcx
-    pop  rax
-    pop  rdx
+macro mod reg {
+    and reg, BRANCHES - 1
 }
 
 macro remove_clobbered{
@@ -85,7 +75,7 @@ ret
 mov r8, rsi
 xor r9,r9
   hash r8, r9
-  mod r8, BRANCHES, r8
+  mod r8
 lea r8, [rdi+24+r8*8]
 mov r9, qword [r8]
 cmp r9, 0

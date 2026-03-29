@@ -17,21 +17,9 @@ macro hash targ, tmp {
     shr  targ, 12
 }
 
-; out = in % fac
-macro mod in, fac, out {
-    push rdx
-    push rax
-    push rcx 
-    xor  rdx, rdx
-    mov  rax, in
-    mov  rcx, fac
-    div  rcx
-    mov  out, rdx
-    pop  rcx
-    pop  rax
-    pop  rdx
+macro mod reg {
+    and reg, BRANCHES - 1
 }
-
 ; rdi -> self
 ; rsi -> key
 ; rdx -> value
@@ -67,7 +55,7 @@ inc r8
 mov r8, rsi
 xor r9,r9
   hash r8, r9
-  mod r8, 7, r8
+  mod r8
 lea r8, [rdi+24+r8*8]
 mov r9, qword [r8]
 cmp r9, 0
