@@ -1,4 +1,4 @@
-#include "blake2d.h"
+#include "blake2b.h"
 #include "../../syscall/mem/mem.h"
 
 const u8 sigma[12][16] = {
@@ -94,7 +94,7 @@ static inline void F(HT *h, u64 m[16], u64 t, u64 f){
 #define ceil(x,y) ((x+y-1)/y)
 
 typedef u64 b[16];
-i32 blake2d(u8* out, u64 out_len, u8* in, u64 in_length){
+i32 blake2b(u8* out, u64 out_len, u8* in, u64 in_length){
         HT h = {
                 0x6A09E667F3BCC908, 
                 0xBB67AE8584CAA73B,

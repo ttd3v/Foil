@@ -90,7 +90,7 @@ local c_sources = {
         "algorithms/parsers/unumber.c",
         "algorithms/stringify/stringify.c",
         "syscall/random/random.c",
-        "hashes/blake2d/blake2d.c",
+        "hashes/blake2b/blake2b.c",
         -- atomic
         "atomic/queue/aqueue.c",
         -- data-structures
