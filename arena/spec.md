@@ -12,26 +12,29 @@ This document describes the Foil Arena, an Arena that endeavor fast memory handl
 
 This document covers the implementation of the Foil Arena, a simple allocator, made to both have a simple interface, and enable parallelism. Meanwhile keeping performance as a priority.
 
-
 This document is highly biased by x86-64, if an instruction is mentioned, then the document is referring to the behavior of such. Thus, you SHALL implement the behavior of the instruction, if using another architecture.
 
 The document follows **RFC 2119** terminology, having the thereby defined meaning when the words are in upper-case. 
 
-For defining the size and at times type of an instance, a typo enclosed parenthesis will be used, refering the the word before it. Typos being: "dyn", which specifies that the size is dynamic, and an "u" followed by bit count that specifies the instance is an unsigned integer. 
+For defining the size and at times type of an instance, a typo enclosed parenthesis will be used, referring the the word before it. Typos being: "dyn", which specifies that the size is dynamic, and an "u" followed by bit count that specifies the instance is an unsigned integer. 
 
 ## Execution description
 
-To describe an execution, m0-64 (u64) will be used as a way of describe a read-write storage for data. Or h0-64 (dyn) for heap data, s0-64 (dyn) for stack data. Whichever of the mentioned, when between brackets (`[` or `]`) are for describing a pointer de-reference, which the size shall be described as mentioned in the terminology or an explicit way.
+To describe an execution, m0-m64 (u64) will be used as a way of describe a read-write storage for data. Or h0-h64 (dyn) for heap data. Whichever of the mentioned, when between brackets (`[` or `]`) are for describing a pointer de-reference, which the size shall be described as mentioned in the terminology or an explicit way.
+
+## Assumptions
+
+The text is being written assuming linux is the main and only target, thus "map", "unmap", may be used to reference OS memory allocations. Also inheriting the map guarantees, for example: All pages being zeroed after first allocated.
 
 ## Arena pool
 
-The Arena is a stream bytes with a length of 72, it holding the array pointers, lengths, locks, and capacities.
+The Arena is a stream bytes with a length of 64, it holding the array pointers, lengths, locks, and capacities.
 
-The bytes between the offset 0 and 24 are three u64, being pointers to in memory arrays. These arrays holding pointers to the allocated pages. Their lengths being a sequence of three u32 in between the offsets 24 and 40, the maximum length being the according capacity.
+The bytes between the offset 0 and 16 are three u64, being pointers to in memory arrays. These arrays holding pointers to the allocated pages. Their lengths being a sequence of three u32 in between the offsets 24 and 32, the maximum length being the according capacity.
 
-Locks, in between the offsets 40 and 52, are three u32 which are locks. These locks being used to ensure correctness in contexts with parallelism.
+Locks, in between the offsets 36 and 44, are three u32 which are locks. These locks being used to ensure correctness in contexts with parallelism.
 
-As for the bytes between 64 and 72, they are a u64 which keeps the Arena flags.
+As for the bytes between 60 and 64, they are a u32 which keeps the Arena flags.
 
 For a reference purpose, the names of the arrays in the first 24 bytes of the structure are "normal", "medium", and "small".
 
@@ -40,12 +43,31 @@ Here is an ASCII visual representation of the structure:
      0          8          16
 [  normal  |  medium  |  small  ]
 
-    24     28      32        40       44       48    
+    24     28      32        36       40       44    
 [  len  |  len  |  len  ][  lock  |  lock  |  lock  ]
 
-    52      56      60       64
+    48      52      56       60
 [  cap  |  cap  |  cap  ][  flags  ]
 ```
+
+And here is a table view of it:
+
+| offset | byte size | type |  description  |
+|--------|-----------|------|---------------|
+| 0      | 8         | u64  | "normal" ref  |
+| 8      | 8         | u64  | "medium" ref  |
+| 16     | 8         | u64  | "small" ref   |
+| 24     | 4         | u32  | length        |
+| 28     | 4         | u32  | length        |
+| 32     | 4         | u32  | length        |
+| 36     | 4         | u32  | lock          |
+| 40     | 4         | u32  | lock          |
+| 44     | 4         | u32  | lock          |
+| 48     | 4         | u32  | capacity      |
+| 52     | 4         | u32  | capacity      |
+| 56     | 4         | u32  | capacity      |
+| 60     | 4         | u32  | flags         |
+
 
 The array "normal" keeps pointers to segments of 4096 bytes (full page), the array medium keeps pointers to segments of 2048 bytes, and small keeps
 pointers to segments of 1024 bytes.
@@ -54,9 +76,9 @@ pointers to segments of 1024 bytes.
 
 Arrays are a pre-allocated range of data, having a length and capacity. In it, values can only be pushed, or popped.
 
-When a value is pushed, the length SHALL be compared to the capacity, if smaller, then the push can proceed. Thus, the new value (u64) being stored at the index equal to the length in the array.
+When a value is pushed, the length SHALL be compared to the capacity, if smaller, then the push can proceed. Thus, the new value (u64) being stored at the index equal to the length in the array, length being increased by one.
 
-When a pop is requested, the length SHALL be compared, if higher than zero, the operation can proceed. The pop must read the value in the array, which is at the index equal to the length, set it to zero, and output the readen.
+When a pop is requested, the length SHALL be compared, if higher than zero, the operation can proceed. The pop must read the value in the array, which is at the index equal to the length minus one, set it to zero, and output the read, and decrease the length.
 
 On both methods, in case of failure, an error SHALL be issued. By either outputting it, or no-op.
 
@@ -78,8 +100,8 @@ For the creation of a new structure, the function SHALL have the first argument 
 
 The flags are (can be OR'ed): 0x00 for static capacity (only the entered on the first argument), 0x01 for dynamic capacity (allow the array to either grow or shrink dynamically), 0x02 for single thread (assumes the environment cannot have any shape or form of parallelism, thus locks are never used), 0x04 to not allocate "medium" and "small". 0x08 for enabling spin-locks in case of a blocked-lock. 
 
-Once created, one memory allocation SHALL be made, it being of `72 + (N*24)` bytes, where N is the first argument. 
-After the allocation, which if failed SHALL have the error outputed, the first capacity numbers SHALL be N. The first array pointer SHALL be the returned from the allocation plus 72, the second SHALL be the pointer plus `72+(N*8)`, the third SHALL be the pointer plus `72+(N*16)`.
+Once created, one memory allocation SHALL be made, it being of `64 + (N*24)` bytes, where N is the first argument. 
+After the allocation, which if failed SHALL have the error outputed, the first capacity numbers SHALL be N. The first array pointer SHALL be the returned from the allocation plus 64, the second SHALL be the pointer plus `64+(N*8)`, the third SHALL be the pointer plus `64+(N*16)`.
 
 If the flag "0x04" is set, then the first length SHALL be N, and the rest 0. Otherwise, the length of all SHALL be N.
 
@@ -95,9 +117,9 @@ The second parameter SHALL be either zero, one, or two. This being used to tell 
 
 ### Execution
 
-Assuming the first parameter is in m0, and the second in m1, m2 being `[m0+64]` (u8) which are the flags. If the environment is defined, in the flags as single-threaded, all the lock-related instances will never happen.
+Assuming the first parameter is in m0, and the second in m1, m2 being `[m0+60]` (u8) which are the flags. If the environment is defined, in the flags as single-threaded, all the lock-related instances will never happen.
 
-For handling the locks, the lock in `[m0+40+(m1*4)]` (u32) is activated. In case of failure, a spin-lock SHOULD happen if allowed, `-3` returned otherwise. Then, `[m0+24+(m1*4)]` (u32) into m3.
+For handling the locks, the lock in `[m0+36+(m1*4)]` (u32) is activated. In case of failure, a spin-lock SHOULD happen if allowed, `-3` returned otherwise. Then, `[m0+24+(m1*4)]` (u32) into m3.
 
 If m3 equals zero, and the dynamic capacity isn't allowed, `-2` is returned. Otherwise, X pages (The number of X is implementation dependent) MUST be allocated (`-1` returned if any of the allocations fail, the ones that succeeded pushed into the selected array), the capacity increased by X, and X-1 pointers pushed into the selected array, while one of the pointers returned after the lock being deactivated as a result.
 
@@ -113,11 +135,13 @@ The first parameter is the arena pointer, second is the pointer being free'd, th
 
 ### Execution
 
-First parameter is in m0, second in m1, and third in m2, and m3 being `[m0+64]` (the flags).
+First parameter is in m0, second in m1, and third in m2, and m3 being `[m0+60]` (the flags).
 
 The execution attempts to activate the lock. In case of failure and the feature being present, a spin-lock happens; `-2` being returned if the feature isn't present. 
 
-The length is fetched into m3 from `[m0 + 24 + (m2*4)]` (u32), and the capacity into m4 from `[m0 + 52 + (m2*4)]`. If the length is equal or higher than the capacity, `-1` SHALL be returned after the lock get deactivated. Otherwise, the pointer SHALL be pushed into the array, lock deactivated, and `0` returned.
+The length is fetched into m3 from `[m0 + 24 + (m2*4)]` (u32), and the capacity into m4 from `[m0 + 48 + (m2*4)]`. If the length is equal or higher than the capacity, `-1` SHALL be returned after the lock get deactivated.
+
+Otherwise the data which the pointer reference MUST be zeroed (set to 0x00), and the pointer SHALL be pushed into the array, lock deactivated, and `0` returned.
 
 ## Grow
 
@@ -133,7 +157,7 @@ m0 keeps the arena pointer, m1 the count of elements to be inserted into the arr
 
 The execution attempts to activate the lock of the selected array — In `[m0+40+(m2*4)]`. In case of failure and the feature being present, a spin-lock happens (if the feature is present); `-2` being returned if the feature isn't present. 
 
-the capacity at `[m0+52+(m3*4)]` is fetched into m3 increased by N, length from `[m0+24+(m3*4)]` is fetched into m4, a memory buffer of `(N+m3)*8`
+the capacity at `[m0+52+(m2*4)]` is fetched into m3 increased by N, length from `[m0+24+(m3*4)]` is fetched into m4, a memory buffer of `(N+m3)*8`
 being allocated it being h0 — lock SHALL be deactivated, and `-1` SHALL be returned if this allocation fails. Then, all the items in the array is copied into the h0, the old array unmapped, and the new array pointer set into the arena. Then, N segments of `4096>>m2` bytes are allocated and pushed into the array; lock is deactivated and `0` returned.
 
 If any memory operation of the mentioned fails, `-1` SHALL be returned.
@@ -153,7 +177,7 @@ shrink all.
 
 The execution attempt to activate the array lock, in case of failure and the spin-lock feature isn't enabled `-1` is returned. If the spin lock feature is enabled and the failure occurs, the spin-lock happens.
 
-The length of the array is fetched into m1 and capacity into m2, if qual to zero, the iteration/execution continues, otherwise lock is deactivated and `0` (success) is returned. 
+The length of the array is fetched into m1 and capacity into m2, if equal to zero, the iteration/execution continues, otherwise lock is deactivated and `0` (success) is returned. 
 
 m1 elements are popped, and unmap applied on all. Then, a new array SHALL be allocated, it being `(m2-m1)*8`; m2 also sub-ed by m1. Then, the old array SHALL have unmap applied, and the m2 written into the capacity of the current array, 0 written into the length of the current array, and the new array pointer SHALL be written into the current array pointer.
 
