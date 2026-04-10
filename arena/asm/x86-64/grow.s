@@ -1,5 +1,6 @@
 format ELF64
 public grow_internal
+public grow
 extrn map
 extrn unmap
 extrn allocate_and_keep
@@ -76,4 +77,46 @@ pop r10
 pop r9
 pop r8
 mov rax, -1
+ret
+
+;SysV
+;@arg0 -> arena
+;@arg1 -> to insert
+;@arg2 -> array number
+grow:
+push r8
+push r9
+push r10
+mov r8d,   dword [rdi+60]
+mov r9d,   r8d
+mov r10d,  0
+and r8d,  0x02
+and r9d,  0x04
+test r9d, r9d
+cmovnz rdx, r10d
+mov r10d, r8d
+test r8d, r8d
+jz .locka
+call grow_internal
+lea rdi, [rdi+36+rdx*4]
+call lock_deactivate
+pop r10
+pop r9
+pop r8
+ret
+.locka:
+push rdi
+push rsi
+lea rdi, [rdi+36+4*rdx]
+mov rsi, r10d 
+and rsi, 0x08
+call lock_activate
+pop rsi
+pop rdi
+pop r10
+pop r9
+pop r8
+cmp rax,0
+je .step_1
+mov rax,-2
 ret
