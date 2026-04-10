@@ -10,14 +10,13 @@ section '.text' executable
 ; OUTPUT
 ; 0     -> activated
 ; -1    -> Failed to activate
-;
 lock_activate:
 mov eax, 0
 lock cmpxchg dword [rdi], 0xFFFFFFFF
 je .return
 test rsi,rsi
-jnz lock_activate
 pause
+jnz lock_activate
 mov rax, -1
 .return:
 ret

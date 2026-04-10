@@ -25,7 +25,7 @@ cmp r8d, 0x04
 cmove rsi, 0
 ;--------------
 test r10d,r10d
-jnz .locka
+jz .locka
 ;--------------
 .step_1:
 mov r10, rsi
