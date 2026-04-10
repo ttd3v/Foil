@@ -1,5 +1,6 @@
 format ELF64
 public lock_activate
+public lock_deactivate
 section '.text' executable
 
 ; SysV
@@ -11,8 +12,8 @@ section '.text' executable
 ; -1    -> Failed to activate
 ;
 lock_activate:
-mov rax, 0
-lock cmpxchg [rdi], 0xFF
+mov eax, 0
+lock cmpxchg dword [rdi], 0xFFFFFFFF
 je .return
 test rsi,rsi
 jnz lock_activate
@@ -24,4 +25,5 @@ ret
 ; SysV
 ; @arg0 -> pointer
 lock_deactivate:
-mov [rdi], 0x00
+mov dword [rdi], 0x00000000
+ret

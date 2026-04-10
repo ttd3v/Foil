@@ -1,5 +1,6 @@
 format ELF64
 public arena_create
+public allocate_and_keep
 extrn map
 section '.text' executable
 
