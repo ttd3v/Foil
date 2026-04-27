@@ -1,8 +1,8 @@
 # Foil Arena
 
 Author: ttd3v
-Date: 2026-4-4
-Version: 0x0000
+Date: 2026-4-12
+Version: 0.1.0 
 
 ## Abstract
 
@@ -24,21 +24,25 @@ To describe an execution, m0-m64 (u64) will be used as a way of describe a read-
 
 ## Assumptions
 
-The text is being written assuming linux is the main and only target, thus "map", "unmap", may be used to reference OS memory allocations. Also inheriting the map guarantees, for example: All pages being zeroed after first allocated.
+The text is being written assuming linux is the main and only target, thus "map", "unmap", may be used to reference OS memory allocations. Also inheriting the map guarantees, for example: A page being null (all 0x00) once allocated.
+
+## Execution
+
+This text describe the execution of methods the arena have, an implementation MAY follow. But the end result HAVE to be the same. 
 
 ## Arena pool
 
-The Arena is a stream bytes with a length of 64, it holding the array pointers, lengths, locks, and capacities.
+The Arena is a stream bytes with a length of 64, it holding the array pointers, lengths, locks, capacities, and flags.
 
-The bytes between the offset 0 and 16 are three u64, being pointers to in memory arrays. These arrays holding pointers to the allocated pages. Their lengths being a sequence of three u32 in between the offsets 24 and 32, the maximum length being the according capacity.
+The bytes between the offset 0 and 24 are three u64, being pointers to in memory arrays. These arrays holding pointers to the allocated pages. Their lengths being a sequence of three u32 in between the offsets 24 and 32, the maximum length being the according capacity.
 
 Locks, in between the offsets 36 and 44, are three u32 which are locks. These locks being used to ensure correctness in contexts with parallelism.
 
 As for the bytes between 60 and 64, they are a u32 which keeps the Arena flags.
 
-For a reference purpose, the names of the arrays in the first 24 bytes of the structure are "normal", "medium", and "small".
+For reference purpose, the names of the arrays in the first 24 bytes of the structure are, in the same order: "normal", "medium", and "small".
 
-Here is an ASCII visual representation of the structure:
+Visual representation of the structure:
 ```
      0          8          16
 [  normal  |  medium  |  small  ]
@@ -50,7 +54,7 @@ Here is an ASCII visual representation of the structure:
 [  cap  |  cap  |  cap  ][  flags  ]
 ```
 
-And here is a table view of it:
+Table view of the structure:
 
 | offset | byte size | type |  description  |
 |--------|-----------|------|---------------|
@@ -69,7 +73,7 @@ And here is a table view of it:
 | 60     | 4         | u32  | flags         |
 
 
-The array "normal" keeps pointers to segments of 4096 bytes (full page), the array medium keeps pointers to segments of 2048 bytes, and small keeps
+The array "normal" keeps pointers to pages (4096 bytes), the array medium keeps pointers to segments of 2048 bytes, and small keeps
 pointers to segments of 1024 bytes.
 
 ### Array
@@ -100,14 +104,14 @@ For the creation of a new structure, the function SHALL have the first argument 
 
 The flags are (can be OR'ed): 0x00 for static capacity (only the entered on the first argument), 0x01 for dynamic capacity (allow the array to either grow or shrink dynamically), 0x02 for single thread (assumes the environment cannot have any shape or form of parallelism, thus locks are never used), 0x04 to not allocate "medium" and "small". 0x08 for enabling spin-locks in case of a blocked-lock. 
 
-Once created, one memory allocation SHALL be made, it being of `64 + (N*24)` bytes, where N is the first argument. 
-After the allocation, which if failed SHALL have the error outputed, the first capacity numbers SHALL be N. The first array pointer SHALL be the returned from the allocation plus 64, the second SHALL be the pointer plus `64+(N*8)`, the third SHALL be the pointer plus `64+(N*16)`.
+Once created, memory allocation(s) SHALL be made, on total `64 + (N*M)` bytes allocated, where N is the first argument. M being 24 if "0x04" is not set, 8 otherwise.
+After the allocation, which if failed SHALL have the error outputed, the first capacity numbers SHALL be N. The arrays pointers SHALL be defined.
 
 If the flag "0x04" is set, then the first length SHALL be N, and the rest 0. Otherwise, the length of all SHALL be N.
 
 The contents of the arrays must be populated accordingly to their lengths, thus the arrays MUST have pointers within that reference a region of bytes which size is the array's (specific size mentioned before).
 
-The pages which pointers will be in the arrays MAY be allocated individually, as a way of leveraging ASLR at the cost of more context switching.
+Its RECOMMENDED for pages to be allocated individually, leveraging ASLR.
 
 ## Allocate
 
@@ -166,14 +170,13 @@ If any memory operation of the mentioned fails, `-1` SHALL be returned.
 
 > If the single thread feature is in the flags, all the steps regarding the lock MAY be ignored or skipped (depends on implementation).
 
-The function `shrink` removes all the pages available in all arrays, decreasing their capacity by the count of elements removed of each.
+The function `shrink` removes all the pages available in the "normal" array, decreasing its capacity by the count of elements removed. The "shrink" of other arrays is not done because unmaping a "medium" or "small" item would unmap not just it but the page, since controlling these would increase complexity and maybe even add bloat, the implementations MAY add support for these. Adding the name "full_shrink" to those which shrink all arrays would be decent.
 
 The first parameter is the arena buffer.
 
 ### Execution
 
-m0 is the first parameter. The following execution covers the shrink process of each array. Thus it MAY be an iteration to
-shrink all.
+m0 is the first parameter.
 
 The execution attempt to activate the array lock, in case of failure and the spin-lock feature isn't enabled `-1` is returned. If the spin lock feature is enabled and the failure occurs, the spin-lock happens.
 

@@ -11,7 +11,7 @@ section '.text' executable
 ; 0     -> activated
 ; -1    -> Failed to activate
 lock_activate:
-mov eax, 0
+xor eax,eax
 lock cmpxchg dword [rdi], 0xFFFFFFFF
 je .return
 test rsi,rsi

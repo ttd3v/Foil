@@ -1,3 +1,14 @@
 **/*.gch
 **/*.o
 ./build
+build/
+*.o
+*.out
+*.exe
+*.gch
+*.pch
+*.so
+*.a
+.vscode/
+.idea/
+.DS_Store
